@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="newstyle.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">MUSIC IS LOVE</div>
+        <div class="nav-links">
+            
+            <button class="open-sidebar-btn" onclick="toggleSidebar()">
+                <i class="fa fa-bars"></i> Menu
+            </button>
+        </div>
+        <div class="nav-search">
+            <input type="text" placeholder="Search...">
+            <i class="fa fa-search"></i>
+        </div>
+        <div class="nav-icons">
+            
+            <i class="fa fa-moon" id="themeToggle"></i>
+        </div>
+    </nav>
+
+    <!-- Sliding Menu for Song Selection -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Song Menu</h2>
+            <i class="fa fa-times close-btn" onclick="toggleSidebar()"></i>
+        </div>
+        <div class="sidebar-content">
+            <ul class="sidebar-menu">
+                <li onclick="showAllSongs()">All Songs</li>
+                <li onclick="showFavorites()">Favorites</li>
+                <li onclick="showGenres()">Genres</li>
+                <li onclick="openAddSongModal()">Add New Song</li>
+            </ul>
+            <div id="songList" class="sidebar-song-list"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="music-player-container">
+            <!-- Embedded Player -->
+            <div class="box center">
+                <div class="box-1 center">
+                    <!-- Content from previous music player goes here -->
+                    <h4  id="name">Nirvair Pannu</h4>
+                    <div class="art">
+                        <img class="center round" id="artist" 
+                        src="images/WAR-Punjabi-2023-20231211191050-500x500 (1).jpg" alt="">
+                    </div>
+                    <div class="art-name">
+                        <p class="title run">WAR</p>
+                    </div>
+                    <div class="prog">
+                        <input type="range" id="progressBar" value="0" min="0" max="100" class="progress-slider">
+                        <div class="time">
+                            <div class="start">
+                                <p id="start">0:00</p>
+                            </div>
+                            <div class="end">
+                                <p id="end">0:00</p>
+                            </div>
+                        </div>
+                        <audio id="audio" class="song-bar" src="songs/WAR.mp3"></audio>
+                    </div>
+                    <div class="msc">
+                        <div class="ctrl" onclick="backward()">
+                            <i class="fas fa-backward-step"></i>
+                        </div>
+                        <div class="ctrl" id="playsong" onclick="togglePlay()">
+                            <i class="fas fa-play" id="playIcon"></i>
+                            <i class="fas fa-pause" id="pauseIcon"></i>
+                        </div>
+                        <div class="ctrl" onclick="forward()">
+                            <i class="fas fa-forward-step"></i>
+                        </div>
+                    </div>
+                    <div class="volume-control">
+                        <i class="fa-solid fa-volume-down"></i>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5">
+                        <i class="fa-solid fa-volume-up"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Add Trending Songs Box -->
+            <div class="trending-box">
+                <h2>Trending Songs</h2>
+                <ul class="trending-list">
+                    <li class="trending-item">
+                        <img src="images/trending song/2c827545d8b6c5158718da81a8e11e20.1000x1000x1.png" alt="Trending Song 1">
+                        <a href=" https://www.youtube.com/watch?v=XTp5jaRU3Ws" target="_blank">
+                            WAVY - Karan Aujla
+                        </a>
+                    </li>
+                    <li class="trending-item">
+                        <img src="images/trending song/maxresdefault.jpg" alt="Trending Song 2">
+                        <a href=" https://www.youtube.com/watch?v=Il4vvuBF5DI" target="_blank">
+                            Snake - cheema Y
+                        </a>
+                    </li>
+                    <li class="trending-item">
+                        <img src="images/trending song/artworks-cBQujxa3himdLnts-ipndfA-t500x500.jpg" alt="Trending Song 3">
+                        <a href=" https://www.youtube.com/watch?v=g-Ij0idc_dk" target="_blank">
+                            Case - Diljit Dosanjh
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
