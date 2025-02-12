@@ -44,7 +44,7 @@ body.light-mode {
 /* Brand/Logo Styling */
 .nav-brand {
     font-size: 1.8rem;
-    font-weight: bold;
+    font-weight: normal;
     background: linear-gradient(45deg, #FFD700, #2bdac2);
     -webkit-background-clip: text;
     background-clip: text;
