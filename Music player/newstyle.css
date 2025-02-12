@@ -413,11 +413,11 @@ body.light-mode {
 
 /* Progress Bar */
 #progressBar {
-    width: 100%;
+    width: 110%;
     appearance: none;
     height: 6px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 12px;
     outline: none;
     cursor: pointer;
     position: relative;
