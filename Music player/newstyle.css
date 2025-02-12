@@ -27,7 +27,7 @@ body.light-mode {
 /* Updated Navbar Styles */
 .navbar {
     width: 100%;
-    height: 70px; /* Slightly taller */
+    height: 80px; /* Slightly taller */
     background: rgba(20, 30, 48, 0.95); /* Darker, more professional background */
     display: flex;
     align-items: center;
