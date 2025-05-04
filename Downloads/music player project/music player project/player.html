@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="newstyle.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .background-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 20%, #000 20%, #000 80%, transparent 80%, transparent);
+            background-size: 50px 50px;
+            animation: backgroundMove 20s linear infinite;
+        }
+
+        @keyframes backgroundMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50px, -50px); }
+        }
+
+        /* Artist name color */
+        #name {
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode #name {
+            color: #333;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Visualizer Styles */
+        .visualizer-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .visualizer-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: #1a1a1a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .visualizer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .visualizer-modes {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: #FFD700;
+            color: #1a1a1a;
+        }
+
+        .visualizer-container {
+            width: 100%;
+            height: 150px;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Activity Panel Styles */
+        .activity-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.98), rgba(42, 82, 152, 0.98));
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 1000;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-panel.active {
+            transform: translateY(0);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-header h2 {
+            color: white;
+            font-size: 32px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .activity-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            color: #1a1a1a;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .activity-btn i {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .activity-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .activity-btn:hover i {
+            transform: scale(1.1);
+        }
+
+        .activity-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .activity-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-card i {
+            font-size: 36px;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+
+        .stat-card h3 {
+            color: white;
+            font-size: 20px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .stat-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .activity-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .top-songs-section, .recent-activity {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .top-songs-section h3, .recent-activity h3 {
+            color: white;
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .top-songs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .song-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .song-info {
+            padding: 15px;
+        }
+
+        .song-info h4 {
+            color: white;
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+
+        .song-info p {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .activity-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .timeline-item i {
+            color: #FFD700;
+            margin-right: 20px;
+            font-size: 24px;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content p {
+            color: white;
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+
+        .timeline-time {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+            .activity-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .activity-panel {
+                padding: 20px;
+            }
+            
+            .activity-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top-songs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .stat-card i {
+                font-size: 28px;
+            }
+
+            .stat-card h3 {
+                font-size: 18px;
+            }
+
+            .stat-card p {
+                font-size: 16px;
+            }
+
+            .activity-btn {
+                padding: 6px 15px;
+                font-size: 14px;
+            }
+            
+            .activity-btn i {
+                font-size: 16px;
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .open-sidebar-btn, .activity-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            color: #1a1a1a;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .open-sidebar-btn i, .activity-btn i {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .open-sidebar-btn:hover, .activity-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .open-sidebar-btn:hover i, .activity-btn:hover i {
+            transform: scale(1.1);
+        }
+
+        .open-sidebar-btn:active, .activity-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 15px;
+            }
+
+            .open-sidebar-btn, .activity-btn {
+                padding: 6px 15px;
+                font-size: 14px;
+            }
+            
+            .open-sidebar-btn i, .activity-btn i {
+                font-size: 16px;
+            }
+        }
+
+        /* Voice Control Button Styles */
+        .voice-control-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .voice-control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .voice-control-btn.active {
+            color: #ff4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        body.light-mode .voice-control-btn {
+            color: #333;
+        }
+
+        body.light-mode .voice-control-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Voice Toast Styles */
+        .voice-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Playback Speed Control Styles */
+        .playback-speed {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .playback-speed .speed-value {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .speed-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 100px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .speed-menu.active {
+            display: flex;
+        }
+
+        .speed-option {
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .speed-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .speed-option.active {
+            background: #FFD700;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+
+        .menu-dropdown {
+            position: relative;
+        }
+
+        /* Enhanced Animations */
+        .art img {
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .art img:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .ctrl {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .ctrl:hover {
+            transform: scale(1.2);
+            color: #FFD700;
+        }
+
+        .ctrl:active {
+            transform: scale(0.9);
+        }
+
+        .volume-control i {
+            transition: all 0.3s ease;
+        }
+
+        .volume-control i:hover {
+            transform: scale(1.2);
+            color: #FFD700;
+        }
+
+        .progress-slider {
+            transition: all 0.3s ease;
+        }
+
+        .progress-slider:hover {
+            transform: scaleY(1.5);
+        }
+
+        .title.run {
+            animation: marquee 15s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .trending-item {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .trending-item:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .trending-item img {
+            transition: all 0.3s ease;
+        }
+
+        .trending-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .stat-card {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .timeline-item {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .menu-dropdown button {
+            transition: all 0.3s ease;
+        }
+
+        .menu-dropdown button:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .equalizer-slider {
+            transition: all 0.3s ease;
+        }
+
+        .equalizer-slider:hover {
+            transform: scaleY(1.5);
+        }
+
+        .settings-panel {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .visualizer-btn {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .mode-btn {
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .mode-btn.active {
+            animation: activePulse 1.5s infinite;
+        }
+
+        @keyframes activePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .player-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .menu-dropdown.active {
+            display: flex;
+        }
+
+        .menu-dropdown button {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .menu-dropdown button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .menu-dropdown button i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Visualizer Settings Styles */
+        #visualizerSettingsPanel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        #visualizerSettingsPanel.active {
+            display: block;
+        }
+
+        #visualizerSettingsPanel h3 {
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .visualizer-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            color: white;
+            font-size: 16px;
+        }
+
+        .control-group select,
+        .control-group input[type="range"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 100%;
+        }
+
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .control-group input[type="range"] {
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #FFD700;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .control-group span {
+            color: white;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        /* Close button for settings panel */
+        .settings-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .settings-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .sidebar-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title h2 {
+            margin: 0;
+            color: white;
+            font-size: 24px;
+        }
+
+        .sidebar-title .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+
+        .sidebar-title .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .sidebar-header-controls {
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">MUSIC IS LOVE</div>
+        <div class="nav-links">
+            <button class="open-sidebar-btn" onclick="toggleSidebar()">
+                <i class="fa fa-bars"></i> Menu
+            </button>
+            <button class="activity-btn" onclick="toggleActivityPanel()">
+                <i class="fas fa-chart-line"></i> Activity
+            </button>
+        </div>
+        <div class="nav-search">
+            <input type="text" placeholder="Search...">
+            <i class="fa fa-search"></i>
+        </div>
+        <div class="nav-icons">
+            <i class="fa fa-moon" id="themeToggle"></i>
+        </div>
+    </nav>
+
+    <!-- Sliding Menu for Song Selection -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <h2>Song Menu</h2>
+                <button class="close-btn" onclick="toggleSidebar()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="sidebar-header-controls">
+                <ul class="sidebar-menu">
+                    <li onclick="showAllSongs()">All Songs</li>
+                    <li onclick="showPlaylist()">Playlist</li>
+                    <li onclick="showQueue()">Queue</li>
+                    <li onclick="showGenres()">Genres</li>
+                    <li onclick="openAddSongModal()">Add New Song</li>
+                </ul>
+            </div>
+        </div>
+        <div class="sidebar-content">
+            <div id="songList" class="sidebar-song-list"></div>
+        </div>
+    </div>
+
+    <!-- Activity Panel -->
+    <div class="activity-panel">
+        <div class="activity-header">
+            <h2>Your Activity</h2>
+            <div class="activity-controls">
+                <button class="close-btn" onclick="toggleActivityPanel()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="activity-content">
+            <div class="activity-stats">
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>Total Listening Time</h3>
+                    <p id="totalTime">0 hours</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-music"></i>
+                    <h3>Songs Played</h3>
+                    <p id="totalSongs">0 songs</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-star"></i>
+                    <h3>Top Genre</h3>
+                    <p id="topGenre">-</p>
+                </div>
+            </div>
+            
+            <div class="activity-sections">
+                <div class="top-songs-section">
+                    <h3>Your Top Songs</h3>
+                    <div class="top-songs-grid" id="topSongsList">
+                        <!-- Top songs will be populated here -->
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-timeline" id="activityTimeline">
+                        <!-- Recent activity will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="music-player-container">
+            <div class="box center">
+                <div class="box-1 center">
+                    <div class="player-header">
+                        <h4 id="name">Nirvair Pannu</h4>
+                        <div class="player-menu">
+                            <button class="menu-btn" onclick="toggleMenu()">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="menu-dropdown">
+                                <button onclick="toggleEqualizer()">
+                                    <i class="fas fa-sliders-h"></i> Equalizer
+                                </button>
+                                <button onclick="togglePlaybackSpeedMenu()">
+                                    <i class="fas fa-tachometer-alt"></i> Playback Speed
+                                </button>
+                                <button onclick="toggleSleepTimer()">
+                                    <i class="fas fa-clock"></i> Sleep Timer
+                                </button>
+                                <button onclick="toggleRepeatMode()">
+                                    <i class="fas fa-redo"></i> Repeat Mode
+                                </button>
+                                <button onclick="toggleLyrics()">
+                                    <i class="fas fa-align-left"></i> Lyrics Display
+                                </button>
+                                <button onclick="toggleVisualizerSettings()">
+                                    <i class="fas fa-wave-square"></i> Visualizer Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="art">
+                        <img class="center round" id="artist" src="images/WAR-Punjabi-2023-20231211191050-500x500 (1).jpg" alt="">
+                    </div>
+                    <div class="art-name">
+                        <p class="title run">WAR</p>
+                    </div>
+                    <div class="prog">
+                        <input type="range" id="progressBar" value="0" min="0" max="100" class="progress-slider">
+                        <div class="time">
+                            <div class="start">
+                                <p id="start">0:00</p>
+                            </div>
+                            <div class="end">
+                                <p id="end">0:00</p>
+                            </div>
+                        </div>
+                        <audio id="audio" class="song-bar" src="songs/WAR.mp3"></audio>
+                    </div>
+                    <div class="msc">
+                        <div class="ctrl" onclick="backward()">
+                            <i class="fas fa-backward-step"></i>
+                        </div>
+                        <div class="ctrl" id="playsong" onclick="togglePlay()">
+                            <i class="fas fa-play" id="playIcon"></i>
+                            <i class="fas fa-pause" id="pauseIcon"></i>
+                        </div>
+                        <div class="ctrl" onclick="forward()">
+                            <i class="fas fa-forward-step"></i>
+                        </div>
+                        <div class="ctrl" onclick="downloadCurrentSong()">
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                    <div class="volume-control">
+                        <i class="fa-solid fa-volume-down"></i>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5">
+                        <i class="fa-solid fa-volume-up"></i>
+                    </div>
+                    
+                    <!-- Visualizer Controls -->
+                    <div class="visualizer-controls">
+                        <button id="visualizerToggle" class="visualizer-btn">
+                            <i class="fas fa-wave-square"></i> Visualizer
+                        </button>
+                        <div class="visualizer-modes">
+                            <button class="mode-btn active" data-mode="bars">Bars</button>
+                            <button class="mode-btn" data-mode="circle">Circle</button>
+                            <button class="mode-btn" data-mode="wave">Wave</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Visualizer Canvas -->
+                    <div class="visualizer-container">
+                        <canvas id="visualizer"></canvas>
+                    </div>
+
+                    <!-- Equalizer UI -->
+                    <div class="equalizer-container">
+                        <div class="equalizer">
+                            <div class="equalizer-band">
+                                <label>Bass <span id="bassValue">0dB</span></label>
+                                <input type="range" min="-12" max="12" value="0" class="equalizer-slider" data-band="bass">
+                            </div>
+                            <div class="equalizer-band">
+                                <label>Mid <span id="midValue">0dB</span></label>
+                                <input type="range" min="-12" max="12" value="0" class="equalizer-slider" data-band="mid">
+                            </div>
+                            <div class="equalizer-band">
+                                <label>Treble <span id="trebleValue">0dB</span></label>
+                                <input type="range" min="-12" max="12" value="0" class="equalizer-slider" data-band="treble">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Settings Panels -->
+                    <div class="settings-panel" id="playbackSpeedPanel">
+                        <h3>Playback Speed</h3>
+                        <div class="speed-control">
+                            <input type="range" min="0.5" max="2" step="0.1" value="1" id="speedSlider">
+                            <span id="speedValue">1.0x</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" id="sleepTimerPanel">
+                        <h3>Sleep Timer</h3>
+                        <div class="timer-control">
+                            <select id="timerSelect">
+                                <option value="0">Off</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="90">1.5 hours</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                            <span id="timerStatus">Timer: Off</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" id="crossfadePanel">
+                        <h3>Crossfade</h3>
+                        <div class="crossfade-control">
+                            <input type="range" min="0" max="10" value="0" id="crossfadeSlider">
+                            <span id="crossfadeValue">0 seconds</span>
+                        </div>
+                    </div>
+
+                    <!-- Visualizer Settings Panel -->
+                    <div class="settings-panel" id="visualizerSettingsPanel">
+                        <h3>Visualizer Settings</h3>
+                        <div class="visualizer-controls">
+                            <div class="control-group">
+                                <label>Mode</label>
+                                <select id="visualizerMode">
+                                    <option value="bars">Bars</option>
+                                    <option value="circle">Circle</option>
+                                    <option value="wave">Wave</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Color</label>
+                                <input type="color" id="visualizerColor" value="#4a90e2">
+                            </div>
+                            <div class="control-group">
+                                <label>Intensity</label>
+                                <input type="range" min="1" max="10" value="5" id="visualizerIntensity">
+                                <span id="intensityValue">5</span>
+                            </div>
+                            <div class="control-group">
+                                <label>Background</label>
+                                <select id="visualizerBackground">
+                                    <option value="transparent">Transparent</option>
+                                    <option value="gradient">Gradient</option>
+                                    <option value="solid">Solid</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>FPS</label>
+                                <input type="range" min="30" max="60" value="45" id="visualizerFPS">
+                                <span id="fpsValue">45</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lyrics Display Section -->
+            <div class="lyrics-container">
+                <h2>Lyrics</h2>
+                <div id="lyrics-display"></div>
+            </div>
+
+            <!-- Add Trending Songs Box -->
+            <div class="trending-box">
+                <h2>Trending Songs</h2>
+                <ul class="trending-list">
+                </li>
+                <li class="trending-item">
+                    <img src="images/trending song/lockmaxresdefault copy.jpg" alt="Trending Song 1">
+                    <a href="https://youtu.be/_wfrNbLguWw?si=oKh2ohFdLbo9nQ2_" target="_blank">
+                        Lock - Sidhu Moose Wala
+                    </a>
+                </li>
+                    <li class="trending-item">
+                        <img src="images/trending song/karan.jpg" alt="Trending Song 2">
+                        <a href="https://youtu.be/ubJa33xxwEU?si=NiYsYj6Zm6hd-tUC" target="_blank">
+                            48 Rhymes - Karan Aujla
+                        </a>
+                    </li>
+                    <li class="trending-item">
+                        <img src="images/trending song/maxresdefault.jpg" alt="Trending Song 3">
+                        <a href="https://www.youtube.com/watch?v=Il4vvuBF5DI" target="_blank">
+                            Snake - Cheema Y
+                        </a>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+    <script src="lyrics.js"></script>
+    <script src="youtube.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="voice-commands.js"></script>
+    <script src="playback-speed.js"></script>
+    <script src="visualizer-settings.js"></script>
+</body>
+</html>
